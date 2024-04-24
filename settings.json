@@ -1,0 +1,18 @@
+{
+  "input_output_type": "CLI",
+  "input_output_settings": {
+    "greeting_text": "Provide a link to github: ",
+    "retry_text": "Bad link, try again: ",
+    "statistics_names": {
+      "groups_of_developers_files": "Most frequent groups of developers that contribute to the same files",
+      "groups_of_developers_modules": "Most frequent groups of developers that contribute to the same modules",
+      "groups_of_files": "Groups of files that are change together"
+    }
+  },
+  "statistics": [
+    "groups_of_developers_files",
+    "groups_of_developers_modules",
+    "groups_of_files"
+  ],
+  "sufficiency_for_considering": 0.2
+}
