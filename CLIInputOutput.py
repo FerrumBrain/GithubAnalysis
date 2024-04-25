@@ -14,6 +14,6 @@ class CLIInputOutput(InputOutput):
         self.first_input = False
         return link
 
-    def print_results(self, results):
+    def print_results(self, results: Dict) -> None:
         for statistics in results.keys():
             print(self.statistics_names[statistics], ':', results[statistics])

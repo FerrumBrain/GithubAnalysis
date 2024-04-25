@@ -2,24 +2,21 @@ import re
 import json
 import pydriller
 from itertools import chain, combinations
+from typing import List, Dict
 
 
-def _powerset(s):
+def _powerset(s: List) -> List[tuple]:
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-def _is_github_link(link):
+def _is_github_link(link: str) -> bool:
     pattern = r'(?:git|https?|git@)(?:\:\/\/)?github.com[/|:][A-Za-z0-9-]+?\/[\w\.-]+?\.git(?:\/?|\#[\w\.\-_]+)?$'
     res = bool(re.match(pattern, link))
     return res
 
 
-def init_repository_handler(link):
-    return _RepositoryHandler(link) if _is_github_link(link) else None
-
-
 class _RepositoryHandler:
-    def __init__(self, link):
+    def __init__(self, link: str):
         assert _is_github_link(link)
 
         self._collect_statistics = {
@@ -74,7 +71,7 @@ class _RepositoryHandler:
     # 1) List of top-frequent contributors is defined for each file
     # 2) Each subgroup of this list gets a point for
     # 3) Subgroups with the most number of points are desired ones
-    def _get_groups_of_developers_files(self):
+    def _get_groups_of_developers_files(self) -> List[tuple]:
         top_authors_by_files = {file: list(map(lambda n_author: n_author[1], list(
             filter(lambda n_author: n_author[0] >= self.sufficiency_for_considering * max(
                 self.authors_by_files[file].values()),
@@ -91,7 +88,7 @@ class _RepositoryHandler:
         groups = [group_points[1] for group_points in sorted([(res[group], group) for group in res.keys()])[-5:]]
         return groups
 
-    def _get_groups_of_developers_modules(self):
+    def _get_groups_of_developers_modules(self) -> List[tuple]:
         top_authors_by_modules = {module: list(map(lambda n_author: n_author[1], list(
             filter(lambda n_author: n_author[0] >= self.sufficiency_for_considering * max(
                 self.authors_by_modules[module].values()),
@@ -109,7 +106,7 @@ class _RepositoryHandler:
         groups = [group_points[1] for group_points in sorted([(res[group], group) for group in res.keys()])[-5:]]
         return groups
 
-    def _get_groups_of_files(self):
+    def _get_groups_of_files(self) -> List[tuple]:
         files = list(set(chain.from_iterable(self.files_by_commits)))
         res = {subset: len(list(
             filter(lambda files_list: len([f for f in subset if f in files_list]) == len(subset) and len(subset) > 1,
@@ -119,8 +116,12 @@ class _RepositoryHandler:
             -5 if len(sorted_values) >= 5 else 1]  # Not 0 so we can avoid empty set and one-element sets
         return list(filter(lambda subset: res[subset] >= top5_value, res.keys()))
 
-    def get_statistics(self):
+    def get_statistics(self) -> Dict:
         difference = set(self.args) - set(self._collect_statistics.keys())
         if len(difference) != 0:
             raise NotImplementedError(f"No implementation for {', '.join(list(difference))}")
         return {statistics_name: self._collect_statistics[statistics_name]() for statistics_name in self.args}
+
+
+def init_repository_handler(link: str) -> _RepositoryHandler:
+    return _RepositoryHandler(link) if _is_github_link(link) else None
